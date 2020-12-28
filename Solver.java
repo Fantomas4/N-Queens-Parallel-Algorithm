@@ -13,6 +13,7 @@ public class Solver {
         this.solveQueens(0, new Integer[this.grid_size]);
     }
 
+    // ATTENTION! No N-Queens placement solution exists for N=2 or N=3
     public void solveQueens(int col, Integer[] rows) {
         if (col == this.grid_size) {
             // Found a valid n-queen solution
@@ -56,16 +57,16 @@ public class Solver {
     }
 
     public void printSolution() {
-        for (Integer[] row : this.results) {
-            for (Integer elem : row) {
-                System.out.print(elem);
+        for (Integer[] solution : this.results) {
+            for (int col = 0; col < solution.length; col++) {
+                System.out.print(solution[col]);
             }
             System.out.println();
         }
     }
 
     public static void main(String[] args) {
-        Solver solver = new Solver(4);
+        Solver solver = new Solver(8);
         solver.startSolving();
         solver.printSolution();
     }
