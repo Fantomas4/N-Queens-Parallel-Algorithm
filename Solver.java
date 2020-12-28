@@ -2,24 +2,50 @@ import java.util.ArrayList;
 
 public class Solver {
     int grid_size;
-    ArrayList<Integer[]> results;
+    ArrayList<Integer[]> results = new ArrayList<>();
+    int threadsNumber;
+    Thread[] threads;
+    private final Object lock = new Object();
 
     public Solver(int grid_size) {
         this.grid_size = grid_size;
-        this.results = new ArrayList<>();
+        this.threadsNumber = grid_size;
+        this.threads = new Thread[threadsNumber];
+
     }
 
     public void startSolving() {
-        this.solveQueens(0, new Integer[this.grid_size]);
+        for (int i = 0; i < threadsNumber; i++) {
+            final int row = i;
+            this.threads[i] = new Thread(() -> {
+                Integer[] rows = new Integer[this.grid_size];
+                rows[0] = row;
+                solveQueens(1, rows);
+            });
+            this.threads[i].start();
+        }
+
+        for (int i = 0; i < threadsNumber; i++) {
+            try {
+                this.threads[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void solveQueens(int col, Integer[] rows) {
+        System.out.println("SOLVEQUEENS -> ENTERED!");
         if (col == this.grid_size) {
             // Found a valid n-queen solution
-            this.results.add(rows.clone());
+            synchronized(this.lock) {
+                System.out.println("*** SOLUTION SAVED!");
+                this.results.add(rows.clone());
+            }
         } else {
             for (int row = 0; row < this.grid_size; row++) {
                 if (checkValidity(rows, col, row)) {
+                    System.out.println("MPIKA1!");
                     rows[col] = row; // Place queen on the grid
                     solveQueens(col + 1, rows);
                 }
@@ -63,6 +89,13 @@ public class Solver {
             System.out.println();
         }
     }
+
+    public static void main(String[] args) {
+        Solver solver = new Solver(4);
+        solver.startSolving();
+        solver.printSolution();
+    }
+
 }
 
 
