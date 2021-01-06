@@ -78,24 +78,32 @@ public class Solver {
         return true;
     }
 
-    public void printSolution() {
-        for (Integer[] row : this.results) {
-            for (Integer elem : row) {
-                System.out.print(elem);
-            }
-            System.out.println();
-        }
-    }
+//    public void printSolution() {
+//        for (Integer[] row : this.results) {
+//            for (Integer elem : row) {
+//                System.out.print(elem);
+//            }
+//            System.out.println();
+//        }
+//    }
 
     public void printSolutionGrid() {
+        System.out.printf("%nThere are %d solutions to the %d-Queens problem:%n%n", this.results.size(), this.grid_size);
+
         // The size for the grid used to print the results,
         // taking the additional space needed for border characters
         // into account.
         int printGridSize = this.grid_size + 3;
 
+        int solCounter = 0; // Counter used to keep track of the solution
+                            // currently being printed
+
         // Print a grid containing the queens positions
         // for each n-queens solution found
         for (Integer[] solution : this.results) {
+            solCounter++;
+            System.out.printf(" Solution %d:%n", solCounter);
+
             String[][] grid = new String[printGridSize][printGridSize];
 
             // Initialize all grid positions with ""
@@ -156,7 +164,7 @@ public class Solver {
             }
 
 
-            // TEST!
+            // Print the generated grid
             for (int i = 0; i < printGridSize; i++) {
                 for (int j = 0; j < printGridSize; j++) {
                     System.out.print(grid[i][j]);
@@ -164,18 +172,15 @@ public class Solver {
                 System.out.println();
             }
 
-            System.out.println("====================================");
-
+            System.out.print("\n\n");
         }
     }
 
     public static void main(String[] args) {
         Solver solver = new Solver(6);
         solver.startSolving();
-        solver.printSolution();
         solver.printSolutionGrid();
     }
-
 }
 
 
