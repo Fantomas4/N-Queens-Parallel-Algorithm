@@ -91,49 +91,68 @@ public class Solver {
         // The size for the grid used to print the results,
         // taking the additional space needed for border characters
         // into account.
-        int printGridSize = this.grid_size + 2;
+        int printGridSize = this.grid_size + 3;
 
         // Print a grid containing the queens positions
         // for each n-queens solution found
         for (Integer[] solution : this.results) {
             String[][] grid = new String[printGridSize][printGridSize];
 
-            // Initialize all grid positions with .
+            // Initialize all grid positions with ""
             for (int i = 0; i < printGridSize; i++) {
                 for (int j = 0; j < printGridSize; j++) {
+                    grid[i][j] = "";
+                }
+            }
+
+            // Set reference numbers at the left border of the grid
+            for (int i = 1; i < printGridSize - 2; i++) {
+                grid[i][0] = Integer.toString(this.grid_size - i);
+            }
+
+            // Set reference numbers at the bottom border of the grid
+            grid[printGridSize - 1][0] = " ";
+            grid[printGridSize - 1][1] = " ";
+            for (int j = 2; j < printGridSize - 1; j++) {
+                grid[printGridSize - 1][j] = String.format(" %d ", j - 2);
+            }
+
+            // Initialize all possible queen positions with .
+            for (int i = 1; i < printGridSize - 1; i++) {
+                for (int j = 2; j < printGridSize; j++) {
                     grid[i][j] = " . ";
                 }
             }
 
             // Set the + symbol at the grid corners
-            grid[0][0] = "+";
+            grid[0][1] = " +";
             grid[0][printGridSize - 1] = "+";
-            grid[printGridSize - 1][0] = "+";
-            grid[printGridSize - 1][printGridSize - 1] = "+";
+            grid[printGridSize - 2][1] = " +";
+            grid[printGridSize - 2][printGridSize - 1] = "+";
 
             // Set the - symbol at the top horizontal grid border
-            for (int j = 1; j < printGridSize - 1; j++) {
+            for (int j = 2; j < printGridSize - 1; j++) {
                 grid[0][j] = " - ";
             }
 
             // Set the - symbol at the bottom horizontal grid border
-            for (int j = 1; j < printGridSize - 1; j++) {
-                grid[printGridSize - 1][j] = " - ";
+            for (int j = 2; j < printGridSize - 1; j++) {
+                grid[printGridSize - 2][j] = " - ";
             }
 
             // Set the | symbol at the left vertical grid border
-            for (int i = 1; i < printGridSize - 1; i++) {
-                grid[i][0] = String.format("|", i - 1);
+            for (int i = 1; i < printGridSize - 2; i++) {
+                grid[i][1] = "|";
             }
 
             // Set the | symbol at the right vertical grid border
-            for (int i = 1; i < printGridSize - 1; i++) {
+            for (int i = 1; i < printGridSize - 2; i++) {
                 grid[i][printGridSize - 1] = "|";
             }
 
             // Add the queens positions to the grid
-            for (int i = 0; i < solution.length; i++) {
-                grid[solution[i] + 1][i + 1] = " X ";
+            for (int j = 0; j < solution.length; j++) {
+                grid[solution[j] + 1][j + 2] = " X ";
             }
 
 
@@ -151,7 +170,7 @@ public class Solver {
     }
 
     public static void main(String[] args) {
-        Solver solver = new Solver(4);
+        Solver solver = new Solver(6);
         solver.startSolving();
         solver.printSolution();
         solver.printSolutionGrid();
