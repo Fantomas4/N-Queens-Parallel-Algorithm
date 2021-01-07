@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 
 public class Solver {
-    int grid_size;
-    ArrayList<Integer[]> results = new ArrayList<>();
-    int threadsNumber;
-    Thread[] threads;
-    private final Object lock = new Object();
+    int grid_size; // The size of the grid to be used (number "n" of the n-queens problem).
+    ArrayList<Integer[]> results = new ArrayList<>(); // Used to store the solutions found for the given n-queens problem.
+    int threadsNumber; // The number of threads that should be used in finding a solution to the n-queens problem.
+    Thread[] threads; // A list containing all the threads used in the problem solving procedure.
+    private final Object lock = new Object(); // A lock used to synchronize access between threads to the results ArrayList.
 
     public Solver(int grid_size) {
         this.grid_size = grid_size;
@@ -36,11 +36,12 @@ public class Solver {
 
     public void solveQueens(int col, Integer[] rows) {
         if (col == this.grid_size) {
-            // Found a valid n-queen solution
+            // Found a complete n-queen solution
             synchronized(this.lock) {
                 this.results.add(rows.clone());
             }
         } else {
+            // Continue looking for a solution recursively
             for (int row = 0; row < this.grid_size; row++) {
                 if (checkValidity(rows, col, row)) {
                     rows[col] = row; // Place queen on the grid
@@ -56,9 +57,9 @@ public class Solver {
     // queen at a time. We know this column is empty.
     private boolean checkValidity(Integer[] rows, int col1, int row1) {
         for (int col2 = 0; col2 < col1; col2++) {
-            int row2 = rows[col2];
-            // check if (col2, row2) invalidates (col1, row1) as a queen
+            // Check if (col2, row2) invalidates (col1, row1) as a queen
             // placement spot.
+            int row2 = rows[col2];
 
             // Check if columns have a queen in the same row
             if (row1 == row2) {
@@ -77,15 +78,6 @@ public class Solver {
         }
         return true;
     }
-
-//    public void printSolution() {
-//        for (Integer[] row : this.results) {
-//            for (Integer elem : row) {
-//                System.out.print(elem);
-//            }
-//            System.out.println();
-//        }
-//    }
 
     public void printSolutionGrid() {
         System.out.printf("%nThere are %d solutions to the %d-Queens problem:%n%n", this.results.size(), this.grid_size);
@@ -162,7 +154,6 @@ public class Solver {
             for (int j = 0; j < solution.length; j++) {
                 grid[solution[j] + 1][j + 2] = " X ";
             }
-
 
             // Print the generated grid
             for (int i = 0; i < printGridSize; i++) {
