@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Solver {
     int grid_size; // The size of the grid to be used (number "n" of the n-queens problem).
@@ -66,7 +67,7 @@ public class Solver {
                 return false;
             }
 
-            // Check diagonals: If teh distance between the rows equals the
+            // Check diagonals: If the distance between the rows equals the
             // distance between the columns, then they are in the same diagonal.
             int rowDistance = Math.abs(row2 - row1);
 
@@ -80,7 +81,7 @@ public class Solver {
     }
 
     public void printSolutionGrid() {
-        System.out.printf("%nThere are %d solutions to the %d-Queens problem:%n%n", this.results.size(), this.grid_size);
+        System.out.printf("%n> There are %d solutions to the %d-Queens problem:%n%n", this.results.size(), this.grid_size);
 
         // The size for the grid used to print the results,
         // taking the additional space needed for border characters
@@ -88,7 +89,7 @@ public class Solver {
         int printGridSize = this.grid_size + 3;
 
         int solCounter = 0; // Counter used to keep track of the solution
-                            // currently being printed
+        // currently being printed
 
         // Print a grid containing the queens positions
         // for each n-queens solution found
@@ -168,12 +169,52 @@ public class Solver {
     }
 
     public static void main(String[] args) {
-        Solver solver = new Solver(6);
-        solver.startSolving();
-        solver.printSolutionGrid();
+        while (true) {
+            boolean shouldExit = false;
+
+            Scanner keyboardScanner = new Scanner(System.in);
+            int userInput;
+
+            System.out.println("\n\t\t\t\t*** N-Queens Problem Visualizer ***\n");
+            while (true) {
+                System.out.println("> To start, enter an integer number N > 0, with N != 2 and N != 3: ");
+                try {
+                    userInput = Integer.parseInt(keyboardScanner.nextLine());
+                    if (userInput > 0 && userInput != 2 && userInput != 3) {
+                        break;
+                    } else {
+                        System.out.println("> Wrong number! Please enter an integer within the specified range and try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("> Wrong Input! Please enter a number and try again.");
+                }
+            }
+
+            System.out.println("> Began calculating all possible solutions of the N-Queens problem for the given N number...");
+            Solver solver = new Solver(userInput);
+            solver.startSolving();
+            solver.printSolutionGrid();
+
+            while (true) {
+                System.out.println("> Enter 1 to try again with another number or 2 to exit: ");
+                try {
+                    userInput = Integer.parseInt(keyboardScanner.nextLine());
+                    if (userInput == 1) {
+                        break;
+                    } else if (userInput == 2) {
+                        shouldExit = true;
+                        break;
+                    } else {
+                        System.out.println("> Wrong number! Please enter an integer within the specified range and try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("> Wrong Input! Please enter a number and try again.");
+                }
+            }
+
+            if (shouldExit) {
+                break;
+            }
+        }
     }
 }
-
-
-
-
