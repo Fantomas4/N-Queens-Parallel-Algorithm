@@ -35,6 +35,7 @@ public class Solver {
         }
     }
 
+    // ATTENTION! No N-Queens placement solution exists for N=2 or N=3
     public void solveQueens(int col, Integer[] rows) {
         if (col == this.gridSize) {
             // Found a complete n-queen solution
@@ -206,7 +207,6 @@ public class Solver {
     public static void main(String[] args) {
         while (true) {
             boolean shouldExit = false;
-
             Scanner keyboardScanner = new Scanner(System.in);
             int userInput;
 
