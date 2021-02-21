@@ -8,8 +8,7 @@ public class Solver {
     int gridSize; // The size of the grid to be used (number "n" of the n-queens problem).
     ArrayList<Integer[]> results = new ArrayList<>(); // Used to store the solutions found for the given n-queens problem.
     int threadsNumber; // The number of threads that should be used in finding a solution to the n-queens problem.
-    ExecutorService taskExecutor; // Executor used to manage the active threads
-    private final Object lock = new Object(); // A lock used to synchronize access between threads to the results ArrayList.
+    ExecutorService taskExecutor; // Executor used to manage the active threads.
 
     public Solver(int gridSize, int threadsNumber) {
         this.gridSize = gridSize;
@@ -19,9 +18,9 @@ public class Solver {
 
     public void startSolving() {
         for (int i = 0; i < gridSize; i++) {
-            Integer[] rows = new Integer[this.gridSize];
-            rows[0] = i;
-            taskExecutor.execute(new QueenTask(1, rows));
+            Integer[] cols = new Integer[this.gridSize];
+            cols[0] = i;
+            taskExecutor.execute(new QueenTask(1, cols));
         }
         taskExecutor.shutdown();
         try {
@@ -34,31 +33,31 @@ public class Solver {
     // Used by the task executor to assign solution tasks to individual threads.
     class QueenTask implements Runnable {
         int col;
-        Integer[] rows;
+        Integer[] cols;
 
-        public QueenTask(int col, Integer[] rows) {
+        public QueenTask(int col, Integer[] cols) {
             this.col = col;
-            this.rows = rows;
+            this.cols = cols;
         }
 
         public void run() {
-            solveQueens(this.col, this.rows);
+            solveQueens(this.col, this.cols);
         }
     }
 
     // ATTENTION! No N-Queens placement solution exists for N=2 or N=3
-    private void solveQueens(int col, Integer[] rows) {
+    private void solveQueens(int col, Integer[] cols) {
         if (col == this.gridSize) {
             // Found a complete n-queen solution
-            synchronized(this.lock) {
-                this.results.add(rows.clone());
+            synchronized(this) {
+                this.results.add(cols.clone());
             }
         } else {
             // Continue looking for a solution recursively
             for (int row = 0; row < this.gridSize; row++) {
-                if (checkValidity(rows, col, row)) {
-                    rows[col] = row; // Place queen on the grid
-                    solveQueens(col + 1, rows);
+                if (checkValidity(cols, col, row)) {
+                    cols[col] = row; // Place queen on the grid
+                    solveQueens(col + 1, cols);
                 }
             }
         }
@@ -68,11 +67,11 @@ public class Solver {
     // a queen in the same row or diagonal. We do not need to check it for queens
     // in the same column because the calling solveQueens only attempts to place one
     // queen at a time. We know this column is empty.
-    private boolean checkValidity(Integer[] rows, int col1, int row1) {
+    private boolean checkValidity(Integer[] cols, int col1, int row1) {
         for (int col2 = 0; col2 < col1; col2++) {
             // Check if (col2, row2) invalidates (col1, row1) as a queen
             // placement spot.
-            int row2 = rows[col2];
+            int row2 = cols[col2];
 
             // Check if columns have a queen in the same row
             if (row1 == row2) {
@@ -237,7 +236,7 @@ public class Solver {
                         System.out.println("> Wrong number! Please enter an integer greater than 0 and try again.");
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("> Wrong Input! Please enter a number and try again.");
+                    System.out.println("> Wrong Input! Please enter an integer number and try again.");
                 }
             }
             while (true) {
@@ -251,7 +250,7 @@ public class Solver {
                         System.out.println("> Wrong number! Please enter an integer within the specified range and try again.");
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("> Wrong Input! Please enter a number and try again.");
+                    System.out.println("> Wrong Input! Please enter an integer number and try again.");
                 }
             }
 
