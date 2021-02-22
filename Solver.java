@@ -1,53 +1,63 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Solver {
     int gridSize; // The size of the grid to be used (number "n" of the n-queens problem).
     ArrayList<Integer[]> results = new ArrayList<>(); // Used to store the solutions found for the given n-queens problem.
     int threadsNumber; // The number of threads that should be used in finding a solution to the n-queens problem.
-    Thread[] threads; // A list containing all the threads used in the problem solving procedure.
-    private final Object lock = new Object(); // A lock used to synchronize access between threads to the results ArrayList.
+    ExecutorService taskExecutor; // Executor used to manage the active threads.
 
-    public Solver(int gridSize) {
+    public Solver(int gridSize, int threadsNumber) {
         this.gridSize = gridSize;
-        this.threadsNumber = gridSize;
-        this.threads = new Thread[threadsNumber];
-
+        this.threadsNumber = threadsNumber;
+        this.taskExecutor = Executors.newFixedThreadPool(threadsNumber);
     }
 
     public void startSolving() {
-        for (int i = 0; i < threadsNumber; i++) {
-            final int row = i;
-            this.threads[i] = new Thread(() -> {
-                Integer[] rows = new Integer[this.gridSize];
-                rows[0] = row;
-                solveQueens(1, rows);
-            });
-            this.threads[i].start();
+        for (int i = 0; i < gridSize; i++) {
+            Integer[] cols = new Integer[this.gridSize];
+            cols[0] = i;
+            taskExecutor.execute(new QueenTask(1, cols));
+        }
+        taskExecutor.shutdown();
+        try {
+            taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Used by the task executor to assign solution tasks to individual threads.
+    class QueenTask implements Runnable {
+        int col;
+        Integer[] cols;
+
+        public QueenTask(int col, Integer[] cols) {
+            this.col = col;
+            this.cols = cols;
         }
 
-        for (int i = 0; i < threadsNumber; i++) {
-            try {
-                this.threads[i].join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        public void run() {
+            solveQueens(this.col, this.cols);
         }
     }
 
     // ATTENTION! No N-Queens placement solution exists for N=2 or N=3
-    public void solveQueens(int col, Integer[] rows) {
+    private void solveQueens(int col, Integer[] cols) {
         if (col == this.gridSize) {
             // Found a complete n-queen solution
-            synchronized(this.lock) {
-                this.results.add(rows.clone());
+            synchronized(this) {
+                this.results.add(cols.clone());
             }
         } else {
             // Continue looking for a solution recursively
             for (int row = 0; row < this.gridSize; row++) {
-                if (checkValidity(rows, col, row)) {
-                    rows[col] = row; // Place queen on the grid
-                    solveQueens(col + 1, rows);
+                if (checkValidity(cols, col, row)) {
+                    cols[col] = row; // Place queen on the grid
+                    solveQueens(col + 1, cols);
                 }
             }
         }
@@ -57,11 +67,11 @@ public class Solver {
     // a queen in the same row or diagonal. We do not need to check it for queens
     // in the same column because the calling solveQueens only attempts to place one
     // queen at a time. We know this column is empty.
-    private boolean checkValidity(Integer[] rows, int col1, int row1) {
+    private boolean checkValidity(Integer[] cols, int col1, int row1) {
         for (int col2 = 0; col2 < col1; col2++) {
             // Check if (col2, row2) invalidates (col1, row1) as a queen
             // placement spot.
-            int row2 = rows[col2];
+            int row2 = cols[col2];
 
             // Check if columns have a queen in the same row
             if (row1 == row2) {
@@ -81,10 +91,12 @@ public class Solver {
         return true;
     }
 
+    // Returns the amount of digits in a number.
     private char[] getNumberDigitChars(int number) {
         return String.valueOf(number).toCharArray();
     }
 
+    // Prints all the solutions that have been found for the given N-Queens problem scenario.
     public void printSolutionGrid() {
         System.out.printf("%n> There are %d solutions to the %d-Queens problem:%n%n", this.results.size(), this.gridSize);
 
@@ -208,25 +220,42 @@ public class Solver {
         while (true) {
             boolean shouldExit = false;
             Scanner keyboardScanner = new Scanner(System.in);
+            int requestedThreads;
+            int requestedN;
             int userInput;
 
             System.out.println("\n\t\t\t\t*** N-Queens Problem Visualizer ***\n");
+            while (true) {
+                System.out.println("> Enter the number of threads that should be used: ");
+                try {
+                    userInput = Integer.parseInt(keyboardScanner.nextLine());
+                    if (userInput > 0) {
+                        requestedThreads = userInput;
+                        break;
+                    } else {
+                        System.out.println("> Wrong number! Please enter an integer greater than 0 and try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("> Wrong Input! Please enter an integer number and try again.");
+                }
+            }
             while (true) {
                 System.out.println("> To start, enter an integer number N > 0, with N != 2 and N != 3: ");
                 try {
                     userInput = Integer.parseInt(keyboardScanner.nextLine());
                     if (userInput > 0 && userInput != 2 && userInput != 3) {
+                        requestedN = userInput;
                         break;
                     } else {
                         System.out.println("> Wrong number! Please enter an integer within the specified range and try again.");
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("> Wrong Input! Please enter a number and try again.");
+                    System.out.println("> Wrong Input! Please enter an integer number and try again.");
                 }
             }
 
             System.out.println("> Began calculating all possible solutions of the N-Queens problem for the given N number...");
-            Solver solver = new Solver(userInput);
+            Solver solver = new Solver(requestedN, requestedThreads);
             solver.startSolving();
             solver.printSolutionGrid();
 
